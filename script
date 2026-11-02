@@ -1,0 +1,76 @@
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+local running = false
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "StuntFarm"
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local function createButton(name, position, color)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.fromOffset(150, 50)
+    button.Position = position
+    button.BackgroundColor3 = color
+    button.Text = name
+    button.TextScaled = true
+    button.Parent = gui
+    return button
+end
+
+local startButton = createButton(
+    "START STUNTS",
+    UDim2.new(0, 20, 0, 100),
+    Color3.fromRGB(0, 180, 80)
+)
+
+local stopButton = createButton(
+    "STOP",
+    UDim2.new(0, 20, 0, 160),
+    Color3.fromRGB(200, 40, 40)
+)
+
+local function stuntLoop()
+    while running do
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+
+        if not humanoid or not root then
+            break
+        end
+
+        -- 100 backflip-rotaties
+        for i = 1, 100 do
+            if not running then break end
+
+            root.CFrame = root.CFrame * CFrame.Angles(
+                math.rad(360), 0, 0
+            )
+
+            RunService.Heartbeat:Wait()
+        end
+
+        if not running then break end
+
+        -- Terug naar de normale houding
+        humanoid:ChangeState(
+            Enum.HumanoidStateType.GettingUp
+        )
+
+        task.wait(2)
+    end
+end
+
+startButton.MouseButton1Click:Connect(function()
+    if running then return end
+    running = true
+    task.spawn(stuntLoop)
+end)
+
+stopButton.MouseButton1Click:Connect(function()
+    running = false
+end)
